@@ -4,6 +4,10 @@ import com.example.tripPlanner.activity.ActivitiesDataRecordDto;
 import com.example.tripPlanner.activity.ActivityCreateResponse;
 import com.example.tripPlanner.activity.ActivityRecordDto;
 import com.example.tripPlanner.activity.ActivityService;
+import com.example.tripPlanner.link.LinkCreateResponse;
+import com.example.tripPlanner.link.LinkRecordDto;
+import com.example.tripPlanner.link.LinkService;
+import com.example.tripPlanner.link.LinksDataRecordDto;
 import com.example.tripPlanner.participant.ParticipantCreateResponse;
 import com.example.tripPlanner.participant.ParticipantDataRecordDto;
 import com.example.tripPlanner.participant.ParticipantRecordDto;
@@ -31,6 +35,10 @@ public class TripController {
     @Autowired
     private ActivityService activityService;
 
+    @Autowired
+    private LinkService linkService;
+
+    // Trips
     @PostMapping
     public ResponseEntity<TripCreateResponse> createTrip(@RequestBody TripRecordDto payload) {
 
@@ -70,7 +78,7 @@ public class TripController {
     }
 
     @GetMapping("/{id}/confirm")
-    public ResponseEntity<TripEntity> updateTrip(@PathVariable UUID id) {
+    public ResponseEntity<TripEntity> confirmTrip(@PathVariable UUID id) {
 
         Optional<TripEntity> trip = this.repository.findById(id);
 
@@ -87,27 +95,7 @@ public class TripController {
         return ResponseEntity.ok(rawTrip);
     }
 
-    @PostMapping("/{id}/invite")
-    public ResponseEntity<ParticipantCreateResponse> inviteParticipant(@PathVariable UUID id, @RequestBody ParticipantRecordDto payload) {
-
-        Optional<TripEntity> trip = this.repository.findById(id);
-
-        if(trip.isEmpty()){
-            return ResponseEntity.notFound().build();
-        }
-
-        TripEntity rawTrip = trip.get();
-
-        ParticipantCreateResponse participantResponse  = this.participantService.registerParticipantToTrip(payload.email(), rawTrip);
-
-        if(rawTrip.getIsConfirmed()) {
-            this.participantService.triggerConfirmationEmailToParticipant(payload.email());
-        }
-
-        return ResponseEntity.ok(participantResponse);
-
-    }
-
+    // Activities
     @PostMapping("/{id}/activities")
     public ResponseEntity<ActivityCreateResponse> registerActivity(@PathVariable UUID id, @RequestBody ActivityRecordDto payload) {
 
@@ -133,11 +121,58 @@ public class TripController {
         return ResponseEntity.ok(activitiesList);
     }
 
+    // Participants
+    @PostMapping("/{id}/invite")
+    public ResponseEntity<ParticipantCreateResponse> inviteParticipant(@PathVariable UUID id, @RequestBody ParticipantRecordDto payload) {
+
+        Optional<TripEntity> trip = this.repository.findById(id);
+
+        if(trip.isEmpty()){
+            return ResponseEntity.notFound().build();
+        }
+
+        TripEntity rawTrip = trip.get();
+
+        ParticipantCreateResponse participantResponse  = this.participantService.registerParticipantToTrip(payload.email(), rawTrip);
+
+        if(rawTrip.getIsConfirmed()) {
+            this.participantService.triggerConfirmationEmailToParticipant(payload.email());
+        }
+
+        return ResponseEntity.ok(participantResponse);
+
+    }
+
     @GetMapping("/{id}/participants")
     public ResponseEntity<List<ParticipantDataRecordDto>> getAllParticipants(@PathVariable UUID id) {
 
         List<ParticipantDataRecordDto> participantList = this.participantService.getAllParticipantsFromTrip(id);
 
         return ResponseEntity.ok(participantList);
+    }
+
+    // Links
+    @PostMapping("/{id}/links")
+    public ResponseEntity<LinkCreateResponse> registerLink(@PathVariable UUID id, @RequestBody LinkRecordDto payload) {
+
+        Optional<TripEntity> trip = this.repository.findById(id);
+
+        if(trip.isEmpty()){
+            return ResponseEntity.notFound().build();
+        }
+
+        TripEntity rawTrip = trip.get();
+
+        LinkCreateResponse linkResponse  = this.linkService.registerLink(payload, rawTrip);
+
+        return ResponseEntity.ok(linkResponse);
+    }
+
+    @GetMapping("/{id}/links")
+    public ResponseEntity<List<LinksDataRecordDto>> getAllLinks(@PathVariable UUID id) {
+
+        List<LinksDataRecordDto> linksList = this.linkService.getAllLinksFromTripId(id);
+
+        return ResponseEntity.ok(linksList);
     }
 }
