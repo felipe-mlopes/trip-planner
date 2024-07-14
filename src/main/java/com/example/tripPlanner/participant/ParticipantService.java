@@ -17,6 +17,8 @@ public class ParticipantService {
         List<ParticipantEntity> participants = participantsToInvite.stream().map(email -> new ParticipantEntity(email, trip)).toList();
 
         this.repository.saveAll(participants);
+
+        System.out.println(participants.get(0).getId());
     }
 
     public ParticipantCreateResponse registerParticipantToTrip(String email, TripEntity trip) {
