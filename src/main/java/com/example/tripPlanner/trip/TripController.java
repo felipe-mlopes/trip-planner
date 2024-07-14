@@ -1,10 +1,16 @@
 package com.example.tripPlanner.trip;
 
+import com.example.tripPlanner.participant.ParticipantCreateResponse;
+import com.example.tripPlanner.participant.ParticipantDataRecordDto;
+import com.example.tripPlanner.participant.ParticipantRecordDto;
 import com.example.tripPlanner.participant.ParticipantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,19 +26,86 @@ public class TripController {
 
     @PostMapping
     public ResponseEntity<TripCreateResponse> createTrip(@RequestBody TripRecordDto payload) {
+
         TripEntity newTrip = new TripEntity(payload);
 
         this.repository.save(newTrip);
-        this.participantService.registerParticipantsToTrip(payload.emails_to_invite(), newTrip.getId());
+        this.participantService.registerParticipantsToTrip(payload.emails_to_invite(), newTrip);
 
         return ResponseEntity.ok(new TripCreateResponse(newTrip.getId()));
-
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<TripEntity> getTripDetails(@PathVariable UUID id) {
+
         Optional<TripEntity> trip = this.repository.findById(id);
 
         return trip.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<TripEntity> updateTrip(@PathVariable UUID id, @RequestBody TripRecordDto payload){
+
+        Optional<TripEntity> trip = this.repository.findById(id);
+
+        if(trip.isPresent()){
+            return ResponseEntity.notFound().build();
+        }
+
+        TripEntity rawTrip = trip.get();
+        rawTrip.setEndsAt(LocalDateTime.parse(payload.ends_at(), DateTimeFormatter.ISO_DATE_TIME));
+        rawTrip.setStartsAt(LocalDateTime.parse(payload.starts_at(), DateTimeFormatter.ISO_DATE_TIME));
+        rawTrip.setDestination(payload.destination());
+
+        this.repository.save(rawTrip);
+
+        return ResponseEntity.ok(rawTrip);
+    }
+
+    @GetMapping("/{id}/confirm")
+    public ResponseEntity<TripEntity> updateTrip(@PathVariable UUID id) {
+
+        Optional<TripEntity> trip = this.repository.findById(id);
+
+        if(trip.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        TripEntity rawTrip = trip.get();
+        rawTrip.setIsConfirmed(true);
+
+        this.participantService.triggerConfirmationEmailToParticipants(id);
+        this.repository.save(rawTrip);
+
+        return ResponseEntity.ok(rawTrip);
+    }
+
+    @PostMapping("/{id}/invite")
+    public ResponseEntity<ParticipantCreateResponse> inviteParticipant(@PathVariable UUID id, @RequestBody ParticipantRecordDto payload) {
+
+        Optional<TripEntity> trip = this.repository.findById(id);
+
+        if(trip.isEmpty()){
+            return ResponseEntity.notFound().build();
+        }
+
+        TripEntity rawTrip = trip.get();
+
+        ParticipantCreateResponse participantResponse  = this.participantService.registerParticipantToTrip(payload.email(), rawTrip);
+
+        if(rawTrip.getIsConfirmed()) {
+            this.participantService.triggerConfirmationEmailToParticipant(payload.email());
+        }
+
+        return ResponseEntity.ok(participantResponse);
+
+    }
+
+    @GetMapping("/{id}/participants")
+    public ResponseEntity<List<ParticipantDataRecordDto>> getAllParticipants(@PathVariable UUID id) {
+
+        List<ParticipantDataRecordDto> participantList = this.participantService.getAllParticipantsFromTrip(id);
+
+        return ResponseEntity.ok(participantList);
     }
 }
