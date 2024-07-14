@@ -1,5 +1,9 @@
 package com.example.tripPlanner.trip;
 
+import com.example.tripPlanner.activity.ActivitiesDataRecordDto;
+import com.example.tripPlanner.activity.ActivityCreateResponse;
+import com.example.tripPlanner.activity.ActivityRecordDto;
+import com.example.tripPlanner.activity.ActivityService;
 import com.example.tripPlanner.participant.ParticipantCreateResponse;
 import com.example.tripPlanner.participant.ParticipantDataRecordDto;
 import com.example.tripPlanner.participant.ParticipantRecordDto;
@@ -23,6 +27,9 @@ public class TripController {
 
     @Autowired
     private ParticipantService participantService;
+
+    @Autowired
+    private ActivityService activityService;
 
     @PostMapping
     public ResponseEntity<TripCreateResponse> createTrip(@RequestBody TripRecordDto payload) {
@@ -99,6 +106,31 @@ public class TripController {
 
         return ResponseEntity.ok(participantResponse);
 
+    }
+
+    @PostMapping("/{id}/activities")
+    public ResponseEntity<ActivityCreateResponse> registerActivity(@PathVariable UUID id, @RequestBody ActivityRecordDto payload) {
+
+        Optional<TripEntity> trip = this.repository.findById(id);
+
+        if(trip.isEmpty()){
+            return ResponseEntity.notFound().build();
+        }
+
+        TripEntity rawTrip = trip.get();
+
+        ActivityCreateResponse activityResponse  = this.activityService.registerActivity(payload, rawTrip);
+
+        return ResponseEntity.ok(activityResponse);
+
+    }
+
+    @GetMapping("/{id}/activities")
+    public ResponseEntity<List<ActivitiesDataRecordDto>> getAllActivities(@PathVariable UUID id) {
+
+        List<ActivitiesDataRecordDto> activitiesList = this.activityService.getAllActivitiesFromId(id);
+
+        return ResponseEntity.ok(activitiesList);
     }
 
     @GetMapping("/{id}/participants")
