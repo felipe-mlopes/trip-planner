@@ -1,5 +1,6 @@
 package com.example.tripPlanner.trip;
 
+import com.example.tripPlanner.exceptions.TripNotFoundException;
 import com.example.tripPlanner.participant.ParticipantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,9 +32,15 @@ public class TripService {
         return newTrip;
     }
 
-    public Optional<TripEntity> getTripDetails(UUID id) {
+    public TripEntity getTripDetails(UUID id) {
 
-        return this.repository.findById(id);
+        Optional<TripEntity> trip = this.repository.findById(id);
+
+        if (trip.isEmpty()) {
+            throw new TripNotFoundException("A viagem não foi encontrada.");
+        }
+
+        return trip.get();
     }
 
     public TripEntity updateTrip(UUID id, TripRecordDto payload) {
@@ -41,7 +48,7 @@ public class TripService {
         Optional<TripEntity> trip = this.repository.findById(id);
 
         if(trip.isEmpty()) {
-            return null;
+            throw new TripNotFoundException("A viagem não foi encontrada.");
         }
 
         LocalDateTime startsAt = LocalDateTime.parse(payload.starts_at(), DateTimeFormatter.ISO_DATE_TIME);
@@ -64,7 +71,7 @@ public class TripService {
         Optional<TripEntity> trip = this.repository.findById(id);
 
         if(trip.isEmpty()) {
-            return null;
+            throw new TripNotFoundException("A viagem não foi encontrada.");
         }
 
         TripEntity rawTrip = trip.get();
