@@ -51,9 +51,9 @@ public class TripController {
     @GetMapping("/{id}")
     public ResponseEntity<TripEntity> getTripDetails(@PathVariable UUID id) {
 
-        Optional<TripEntity> trip = this.tripService.getTripDetails(id);
+        TripEntity trip = this.tripService.getTripDetails(id);
 
-        return trip.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        return ResponseEntity.ok(trip);
     }
 
     @PutMapping("/{id}")
@@ -86,18 +86,11 @@ public class TripController {
     @PostMapping("/{id}/activities")
     public ResponseEntity<ActivityCreateResponse> registerActivity(@PathVariable UUID id, @RequestBody ActivityRecordDto payload) {
 
-        Optional<TripEntity> trip = this.tripService.getTripDetails(id);
+        TripEntity trip = this.tripService.getTripDetails(id);
 
-        if(trip.isEmpty()){
-            return ResponseEntity.notFound().build();
-        }
-
-        TripEntity rawTrip = trip.get();
-
-        ActivityCreateResponse activityResponse  = this.activityService.registerActivity(payload, rawTrip);
+        ActivityCreateResponse activityResponse  = this.activityService.registerActivity(payload, trip);
 
         return ResponseEntity.ok(activityResponse);
-
     }
 
     @GetMapping("/{id}/activities")
@@ -112,17 +105,11 @@ public class TripController {
     @PostMapping("/{id}/invite")
     public ResponseEntity<ParticipantCreateResponse> inviteParticipant(@PathVariable UUID id, @RequestBody ParticipantRecordDto payload) {
 
-        Optional<TripEntity> trip = this.tripService.getTripDetails(id);
+        TripEntity trip = this.tripService.getTripDetails(id);
 
-        if(trip.isEmpty()){
-            return ResponseEntity.notFound().build();
-        }
+        ParticipantCreateResponse participantResponse  = this.participantService.registerParticipantToTrip(payload.email(), trip);
 
-        TripEntity rawTrip = trip.get();
-
-        ParticipantCreateResponse participantResponse  = this.participantService.registerParticipantToTrip(payload.email(), rawTrip);
-
-        if(rawTrip.getIsConfirmed()) {
+        if(trip.getIsConfirmed()) {
             this.participantService.triggerConfirmationEmailToParticipant(payload.email());
         }
 
@@ -142,15 +129,9 @@ public class TripController {
     @PostMapping("/{id}/links")
     public ResponseEntity<LinkCreateResponse> registerLink(@PathVariable UUID id, @RequestBody LinkRecordDto payload) {
 
-        Optional<TripEntity> trip = this.tripService.getTripDetails(id);
+        TripEntity trip = this.tripService.getTripDetails(id);
 
-        if(trip.isEmpty()){
-            return ResponseEntity.notFound().build();
-        }
-
-        TripEntity rawTrip = trip.get();
-
-        LinkCreateResponse linkResponse  = this.linkService.registerLink(payload, rawTrip);
+        LinkCreateResponse linkResponse  = this.linkService.registerLink(payload, trip);
 
         return ResponseEntity.ok(linkResponse);
     }
