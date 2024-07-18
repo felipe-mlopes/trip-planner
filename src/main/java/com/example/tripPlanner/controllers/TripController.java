@@ -74,10 +74,6 @@ public class TripController {
 
         TripEntity confirmTrip = this.tripService.confirmTrip(id);
 
-        if(confirmTrip == null) {
-            return ResponseEntity.notFound().build();
-        }
-
         this.participantService.triggerConfirmationEmailToParticipants(id);
 
         return ResponseEntity.ok(confirmTrip);
