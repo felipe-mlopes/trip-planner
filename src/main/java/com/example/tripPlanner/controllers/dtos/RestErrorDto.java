@@ -1,4 +1,4 @@
-package com.example.tripPlanner;
+package com.example.tripPlanner.controllers.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 @Getter
 @Setter
-public class RestErrorMessage {
+public class RestErrorDto {
 
     private HttpStatus status;
     private String message;

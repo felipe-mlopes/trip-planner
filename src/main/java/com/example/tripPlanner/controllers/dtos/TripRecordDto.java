@@ -1,4 +1,4 @@
-package com.example.tripPlanner.trip;
+package com.example.tripPlanner.controllers.dtos;
 
 import java.util.List;
 

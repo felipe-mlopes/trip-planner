@@ -1,4 +1,4 @@
-package com.example.tripPlanner.participant;
+package com.example.tripPlanner.controllers.dtos;
 
 public record ParticipantRecordDto(String name, String email) {
 }
