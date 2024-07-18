@@ -1,5 +1,6 @@
-package com.example.tripPlanner.link;
+package com.example.tripPlanner.repositories;
 
+import com.example.tripPlanner.entities.LinkEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
