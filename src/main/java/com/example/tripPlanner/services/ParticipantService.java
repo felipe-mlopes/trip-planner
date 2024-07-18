@@ -4,11 +4,13 @@ import com.example.tripPlanner.entities.ParticipantEntity;
 import com.example.tripPlanner.entities.TripEntity;
 import com.example.tripPlanner.controllers.dtos.ParticipantCreateResponseDto;
 import com.example.tripPlanner.controllers.dtos.ParticipantDataRecordDto;
+import com.example.tripPlanner.exceptions.TripNotFoundException;
 import com.example.tripPlanner.repositories.ParticipantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -31,6 +33,25 @@ public class ParticipantService {
         this.repository.save(newParticipant);
 
         return new ParticipantCreateResponseDto(newParticipant.getId());
+    }
+
+    public ParticipantEntity confirmParticipant(UUID id, String name) {
+
+        Optional<ParticipantEntity> participant = this.repository.findById(id);
+
+        if (participant.isEmpty()) {
+            throw new TripNotFoundException("O participante não foi encontrado.");
+        }
+
+        if (name == null) {
+            throw new TripNotFoundException("Nenhum nome foi informado.");
+        }
+
+        ParticipantEntity rawParticipant = participant.get();
+        rawParticipant.setIsConfirmed(true);
+        rawParticipant.setName(name);
+
+        return this.repository.save(rawParticipant);
     }
 
     public void triggerConfirmationEmailToParticipants(UUID tripId) {}
