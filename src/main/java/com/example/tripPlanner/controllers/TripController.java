@@ -1,25 +1,26 @@
-package com.example.tripPlanner.trip;
+package com.example.tripPlanner.controllers;
 
-import com.example.tripPlanner.activity.ActivitiesDataRecordDto;
-import com.example.tripPlanner.activity.ActivityCreateResponse;
-import com.example.tripPlanner.activity.ActivityRecordDto;
-import com.example.tripPlanner.activity.ActivityService;
-import com.example.tripPlanner.link.LinkCreateResponse;
-import com.example.tripPlanner.link.LinkRecordDto;
-import com.example.tripPlanner.link.LinkService;
-import com.example.tripPlanner.link.LinksDataRecordDto;
-import com.example.tripPlanner.participant.ParticipantCreateResponse;
-import com.example.tripPlanner.participant.ParticipantDataRecordDto;
-import com.example.tripPlanner.participant.ParticipantRecordDto;
-import com.example.tripPlanner.participant.ParticipantService;
+import com.example.tripPlanner.controllers.dtos.ActivitiesDataRecordDto;
+import com.example.tripPlanner.controllers.dtos.ActivityCreateResponseDto;
+import com.example.tripPlanner.controllers.dtos.ActivityRecordDto;
+import com.example.tripPlanner.services.ActivityService;
+import com.example.tripPlanner.entities.TripEntity;
+import com.example.tripPlanner.controllers.dtos.LinkCreateResponseDto;
+import com.example.tripPlanner.controllers.dtos.LinkRecordDto;
+import com.example.tripPlanner.services.LinkService;
+import com.example.tripPlanner.controllers.dtos.LinksDataRecordDto;
+import com.example.tripPlanner.controllers.dtos.ParticipantCreateResponseDto;
+import com.example.tripPlanner.controllers.dtos.ParticipantDataRecordDto;
+import com.example.tripPlanner.controllers.dtos.ParticipantRecordDto;
+import com.example.tripPlanner.services.ParticipantService;
+import com.example.tripPlanner.controllers.dtos.TripCreateResponseDto;
+import com.example.tripPlanner.controllers.dtos.TripRecordDto;
+import com.example.tripPlanner.services.TripService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -40,12 +41,12 @@ public class TripController {
 
     // Trips
     @PostMapping
-    public ResponseEntity<TripCreateResponse> createTrip(@RequestBody TripRecordDto payload) {
+    public ResponseEntity<TripCreateResponseDto> createTrip(@RequestBody TripRecordDto payload) {
 
         TripEntity newTrip = this.tripService.createTrip(payload);
         this.participantService.registerParticipantsToTrip(payload.emails_to_invite(), newTrip);
 
-        return ResponseEntity.ok(new TripCreateResponse(newTrip.getId()));
+        return ResponseEntity.ok(new TripCreateResponseDto(newTrip.getId()));
     }
 
     @GetMapping("/{id}")
@@ -84,11 +85,11 @@ public class TripController {
 
     // Activities
     @PostMapping("/{id}/activities")
-    public ResponseEntity<ActivityCreateResponse> registerActivity(@PathVariable UUID id, @RequestBody ActivityRecordDto payload) {
+    public ResponseEntity<ActivityCreateResponseDto> registerActivity(@PathVariable UUID id, @RequestBody ActivityRecordDto payload) {
 
         TripEntity trip = this.tripService.getTripDetails(id);
 
-        ActivityCreateResponse activityResponse  = this.activityService.registerActivity(payload, trip);
+        ActivityCreateResponseDto activityResponse  = this.activityService.registerActivity(payload, trip);
 
         return ResponseEntity.ok(activityResponse);
     }
@@ -103,11 +104,11 @@ public class TripController {
 
     // Participants
     @PostMapping("/{id}/invite")
-    public ResponseEntity<ParticipantCreateResponse> inviteParticipant(@PathVariable UUID id, @RequestBody ParticipantRecordDto payload) {
+    public ResponseEntity<ParticipantCreateResponseDto> inviteParticipant(@PathVariable UUID id, @RequestBody ParticipantRecordDto payload) {
 
         TripEntity trip = this.tripService.getTripDetails(id);
 
-        ParticipantCreateResponse participantResponse  = this.participantService.registerParticipantToTrip(payload.email(), trip);
+        ParticipantCreateResponseDto participantResponse  = this.participantService.registerParticipantToTrip(payload.email(), trip);
 
         if(trip.getIsConfirmed()) {
             this.participantService.triggerConfirmationEmailToParticipant(payload.email());
@@ -127,11 +128,11 @@ public class TripController {
 
     // Links
     @PostMapping("/{id}/links")
-    public ResponseEntity<LinkCreateResponse> registerLink(@PathVariable UUID id, @RequestBody LinkRecordDto payload) {
+    public ResponseEntity<LinkCreateResponseDto> registerLink(@PathVariable UUID id, @RequestBody LinkRecordDto payload) {
 
         TripEntity trip = this.tripService.getTripDetails(id);
 
-        LinkCreateResponse linkResponse  = this.linkService.registerLink(payload, trip);
+        LinkCreateResponseDto linkResponse  = this.linkService.registerLink(payload, trip);
 
         return ResponseEntity.ok(linkResponse);
     }
