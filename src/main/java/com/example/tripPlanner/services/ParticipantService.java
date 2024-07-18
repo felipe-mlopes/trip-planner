@@ -1,6 +1,10 @@
-package com.example.tripPlanner.participant;
+package com.example.tripPlanner.services;
 
-import com.example.tripPlanner.trip.TripEntity;
+import com.example.tripPlanner.entities.ParticipantEntity;
+import com.example.tripPlanner.entities.TripEntity;
+import com.example.tripPlanner.controllers.dtos.ParticipantCreateResponseDto;
+import com.example.tripPlanner.controllers.dtos.ParticipantDataRecordDto;
+import com.example.tripPlanner.repositories.ParticipantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,12 +25,12 @@ public class ParticipantService {
         System.out.println(participants.get(0).getId());
     }
 
-    public ParticipantCreateResponse registerParticipantToTrip(String email, TripEntity trip) {
+    public ParticipantCreateResponseDto registerParticipantToTrip(String email, TripEntity trip) {
         ParticipantEntity newParticipant = new ParticipantEntity(email, trip);
 
         this.repository.save(newParticipant);
 
-        return new ParticipantCreateResponse(newParticipant.getId());
+        return new ParticipantCreateResponseDto(newParticipant.getId());
     }
 
     public void triggerConfirmationEmailToParticipants(UUID tripId) {}

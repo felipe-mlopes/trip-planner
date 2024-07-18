@@ -1,7 +1,9 @@
-package com.example.tripPlanner.trip;
+package com.example.tripPlanner.services;
 
+import com.example.tripPlanner.entities.TripEntity;
 import com.example.tripPlanner.exceptions.TripNotFoundException;
-import com.example.tripPlanner.participant.ParticipantService;
+import com.example.tripPlanner.repositories.TripRepository;
+import com.example.tripPlanner.controllers.dtos.TripRecordDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

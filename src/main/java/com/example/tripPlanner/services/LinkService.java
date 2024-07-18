@@ -1,6 +1,11 @@
-package com.example.tripPlanner.link;
+package com.example.tripPlanner.services;
 
-import com.example.tripPlanner.trip.TripEntity;
+import com.example.tripPlanner.entities.LinkEntity;
+import com.example.tripPlanner.entities.TripEntity;
+import com.example.tripPlanner.controllers.dtos.LinkCreateResponseDto;
+import com.example.tripPlanner.controllers.dtos.LinkRecordDto;
+import com.example.tripPlanner.controllers.dtos.LinksDataRecordDto;
+import com.example.tripPlanner.repositories.LinkRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,12 +18,12 @@ public class LinkService {
     @Autowired
     private LinkRepository repository;
 
-    public LinkCreateResponse registerLink(LinkRecordDto payload, TripEntity trip) {
+    public LinkCreateResponseDto registerLink(LinkRecordDto payload, TripEntity trip) {
         LinkEntity newLink = new LinkEntity(payload.title(), payload.url(), trip);
 
         this.repository.save(newLink);
 
-        return new LinkCreateResponse(newLink.getId());
+        return new LinkCreateResponseDto(newLink.getId());
     }
 
     public List<LinksDataRecordDto> getAllLinksFromTripId(UUID tripId) {

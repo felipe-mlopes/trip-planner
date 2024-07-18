@@ -1,6 +1,11 @@
-package com.example.tripPlanner.activity;
+package com.example.tripPlanner.services;
 
-import com.example.tripPlanner.trip.TripEntity;
+import com.example.tripPlanner.controllers.dtos.ActivitiesDataRecordDto;
+import com.example.tripPlanner.controllers.dtos.ActivityCreateResponseDto;
+import com.example.tripPlanner.controllers.dtos.ActivityRecordDto;
+import com.example.tripPlanner.repositories.ActivityRepository;
+import com.example.tripPlanner.entities.ActivityEntity;
+import com.example.tripPlanner.entities.TripEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +20,7 @@ public class ActivityService {
     @Autowired
     private ActivityRepository repository;
 
-    public ActivityCreateResponse registerActivity(ActivityRecordDto payload, TripEntity trip) {
+    public ActivityCreateResponseDto registerActivity(ActivityRecordDto payload, TripEntity trip) {
 
         LocalDateTime occursAt = LocalDateTime.parse(payload.occurs_at(), DateTimeFormatter.ISO_DATE_TIME);
         LocalDateTime endsAt = trip.getEndsAt();
@@ -29,7 +34,7 @@ public class ActivityService {
 
         this.repository.save(newActivity);
 
-        return new ActivityCreateResponse(newActivity.getId());
+        return new ActivityCreateResponseDto(newActivity.getId());
     }
 
     public List<ActivitiesDataRecordDto> getAllActivitiesFromId(UUID tripId) {
