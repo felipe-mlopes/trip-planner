@@ -1,5 +1,6 @@
-package com.example.tripPlanner.trip;
+package com.example.tripPlanner.entities;
 
+import com.example.tripPlanner.controllers.dtos.TripRecordDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,6 +1,5 @@
-package com.example.tripPlanner.participant;
+package com.example.tripPlanner.entities;
 
-import com.example.tripPlanner.trip.TripEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
