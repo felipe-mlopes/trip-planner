@@ -2,8 +2,8 @@ package com.example.tripPlanner.services;
 
 import com.example.tripPlanner.entities.ParticipantEntity;
 import com.example.tripPlanner.entities.TripEntity;
-import com.example.tripPlanner.controllers.dtos.ParticipantCreateResponseDto;
-import com.example.tripPlanner.controllers.dtos.ParticipantDataRecordDto;
+import com.example.tripPlanner.controllers.dtos.responses.ParticipantCreateResponseDto;
+import com.example.tripPlanner.controllers.dtos.responses.ParticipantDataResponseDto;
 import com.example.tripPlanner.exceptions.TripNotFoundException;
 import com.example.tripPlanner.repositories.ParticipantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +58,7 @@ public class ParticipantService {
 
     public void triggerConfirmationEmailToParticipant(String email) {}
 
-    public List<ParticipantDataRecordDto> getAllParticipantsFromTrip(UUID tripId) {
-        return this.repository.findByTripId(tripId).stream().map(participant -> new ParticipantDataRecordDto(participant.getId(), participant.getName(), participant.getEmail(), participant.getIsConfirmed())).toList();
+    public List<ParticipantDataResponseDto> getAllParticipantsFromTrip(UUID tripId) {
+        return this.repository.findByTripId(tripId).stream().map(participant -> new ParticipantDataResponseDto(participant.getId(), participant.getName(), participant.getEmail(), participant.getIsConfirmed())).toList();
     }
 }
