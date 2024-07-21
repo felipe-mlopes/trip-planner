@@ -1,4 +1,4 @@
-package com.example.tripPlanner.controllers.dtos;
+package com.example.tripPlanner.controllers.dtos.responses;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
