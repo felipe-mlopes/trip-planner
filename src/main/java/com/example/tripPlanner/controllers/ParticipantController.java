@@ -1,14 +1,12 @@
 package com.example.tripPlanner.controllers;
 
 import com.example.tripPlanner.entities.ParticipantEntity;
-import com.example.tripPlanner.controllers.dtos.ParticipantRecordDto;
-import com.example.tripPlanner.repositories.ParticipantRepository;
+import com.example.tripPlanner.controllers.dtos.requests.ParticipantRecordDto;
 import com.example.tripPlanner.services.ParticipantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
