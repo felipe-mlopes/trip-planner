@@ -1,6 +1,6 @@
 package com.example.tripPlanner.handlers;
 
-import com.example.tripPlanner.controllers.dtos.RestErrorDto;
+import com.example.tripPlanner.controllers.dtos.errors.RestErrorDto;
 import com.example.tripPlanner.exceptions.TripFullErrorException;
 import com.example.tripPlanner.exceptions.TripNotFoundException;
 import org.springframework.http.HttpStatus;
