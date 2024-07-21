@@ -1,21 +1,16 @@
 package com.example.tripPlanner.controllers;
 
-import com.example.tripPlanner.controllers.dtos.ActivitiesDataRecordDto;
-import com.example.tripPlanner.controllers.dtos.ActivityCreateResponseDto;
-import com.example.tripPlanner.controllers.dtos.ActivityRecordDto;
+import com.example.tripPlanner.controllers.dtos.requests.ActivityRecordDto;
+import com.example.tripPlanner.controllers.dtos.requests.LinkRecordDto;
+import com.example.tripPlanner.controllers.dtos.requests.ParticipantRecordDto;
+import com.example.tripPlanner.controllers.dtos.requests.TripRecordDto;
+import com.example.tripPlanner.controllers.dtos.responses.*;
 import com.example.tripPlanner.services.ActivityService;
 import com.example.tripPlanner.entities.TripEntity;
-import com.example.tripPlanner.controllers.dtos.LinkCreateResponseDto;
-import com.example.tripPlanner.controllers.dtos.LinkRecordDto;
 import com.example.tripPlanner.services.LinkService;
-import com.example.tripPlanner.controllers.dtos.LinksDataRecordDto;
-import com.example.tripPlanner.controllers.dtos.ParticipantCreateResponseDto;
-import com.example.tripPlanner.controllers.dtos.ParticipantDataRecordDto;
-import com.example.tripPlanner.controllers.dtos.ParticipantRecordDto;
 import com.example.tripPlanner.services.ParticipantService;
-import com.example.tripPlanner.controllers.dtos.TripCreateResponseDto;
-import com.example.tripPlanner.controllers.dtos.TripRecordDto;
 import com.example.tripPlanner.services.TripService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,12 +36,20 @@ public class TripController {
 
     // Trips
     @PostMapping
-    public ResponseEntity<TripCreateResponseDto> createTrip(@RequestBody TripRecordDto payload) {
+    public ResponseEntity<TripCreateResponseDto> createTrip(@RequestBody @Valid TripRecordDto payload) {
 
         TripEntity newTrip = this.tripService.createTrip(payload);
         this.participantService.registerParticipantsToTrip(payload.emails_to_invite(), newTrip);
 
         return ResponseEntity.ok(new TripCreateResponseDto(newTrip.getId()));
+    }
+
+    @GetMapping()
+    public ResponseEntity<List<TripDataResponseDto>> getAllTrips() {
+
+        List<TripDataResponseDto> trips = this.tripService.getAllTrips();
+
+        return ResponseEntity.ok(trips);
     }
 
     @GetMapping("/{id}")
@@ -58,7 +61,7 @@ public class TripController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TripEntity> updateTrip(@PathVariable UUID id, @RequestBody TripRecordDto payload){
+    public ResponseEntity<Void> updateTrip(@PathVariable UUID id, @RequestBody TripRecordDto payload){
 
         TripEntity updatedTrip = this.tripService.updateTrip(id, payload);
 
@@ -66,7 +69,7 @@ public class TripController {
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok(updatedTrip);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{id}/confirm")
@@ -77,6 +80,14 @@ public class TripController {
         this.participantService.triggerConfirmationEmailToParticipants(id);
 
         return ResponseEntity.ok(confirmTrip);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTrip(@PathVariable UUID id) {
+
+        this.tripService.deleteTrip(id);
+
+        return ResponseEntity.noContent().build();
     }
 
     // Activities
@@ -91,9 +102,9 @@ public class TripController {
     }
 
     @GetMapping("/{id}/activities")
-    public ResponseEntity<List<ActivitiesDataRecordDto>> getAllActivities(@PathVariable UUID id) {
+    public ResponseEntity<List<ActivitiesDataResponseDto>> getAllActivities(@PathVariable UUID id) {
 
-        List<ActivitiesDataRecordDto> activitiesList = this.activityService.getAllActivitiesFromId(id);
+        List<ActivitiesDataResponseDto> activitiesList = this.activityService.getAllActivitiesFromId(id);
 
         return ResponseEntity.ok(activitiesList);
     }
@@ -115,9 +126,9 @@ public class TripController {
     }
 
     @GetMapping("/{id}/participants")
-    public ResponseEntity<List<ParticipantDataRecordDto>> getAllParticipants(@PathVariable UUID id) {
+    public ResponseEntity<List<ParticipantDataResponseDto>> getAllParticipants(@PathVariable UUID id) {
 
-        List<ParticipantDataRecordDto> participantList = this.participantService.getAllParticipantsFromTrip(id);
+        List<ParticipantDataResponseDto> participantList = this.participantService.getAllParticipantsFromTrip(id);
 
         return ResponseEntity.ok(participantList);
     }
@@ -134,9 +145,9 @@ public class TripController {
     }
 
     @GetMapping("/{id}/links")
-    public ResponseEntity<List<LinksDataRecordDto>> getAllLinks(@PathVariable UUID id) {
+    public ResponseEntity<List<LinksDataResponseDto>> getAllLinks(@PathVariable UUID id) {
 
-        List<LinksDataRecordDto> linksList = this.linkService.getAllLinksFromTripId(id);
+        List<LinksDataResponseDto> linksList = this.linkService.getAllLinksFromTripId(id);
 
         return ResponseEntity.ok(linksList);
     }
