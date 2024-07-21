@@ -1,6 +1,6 @@
 package com.example.tripPlanner.entities;
 
-import com.example.tripPlanner.controllers.dtos.TripRecordDto;
+import com.example.tripPlanner.controllers.dtos.requests.TripRecordDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,6 +9,8 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -40,6 +42,15 @@ public class TripEntity {
 
     @Column(name = "owner_email", nullable = false)
     private String ownerEmail;
+
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
+    private List<ParticipantEntity> participants = new ArrayList<>();
+
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
+    private List<ActivityEntity> activities = new ArrayList<>();
+
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
+    private List<LinkEntity> links = new ArrayList<>();
 
     public TripEntity(TripRecordDto data) {
         this.destination = data.destination();
