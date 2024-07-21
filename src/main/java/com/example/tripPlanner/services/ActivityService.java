@@ -1,8 +1,8 @@
 package com.example.tripPlanner.services;
 
-import com.example.tripPlanner.controllers.dtos.ActivitiesDataRecordDto;
-import com.example.tripPlanner.controllers.dtos.ActivityCreateResponseDto;
-import com.example.tripPlanner.controllers.dtos.ActivityRecordDto;
+import com.example.tripPlanner.controllers.dtos.responses.ActivitiesDataResponseDto;
+import com.example.tripPlanner.controllers.dtos.responses.ActivityCreateResponseDto;
+import com.example.tripPlanner.controllers.dtos.requests.ActivityRecordDto;
 import com.example.tripPlanner.repositories.ActivityRepository;
 import com.example.tripPlanner.entities.ActivityEntity;
 import com.example.tripPlanner.entities.TripEntity;
@@ -37,7 +37,7 @@ public class ActivityService {
         return new ActivityCreateResponseDto(newActivity.getId());
     }
 
-    public List<ActivitiesDataRecordDto> getAllActivitiesFromId(UUID tripId) {
-        return this.repository.findByTripId(tripId).stream().map(activity -> new ActivitiesDataRecordDto(activity.getId(), activity.getTitle(), activity.getOccursAt())).toList();
+    public List<ActivitiesDataResponseDto> getAllActivitiesFromId(UUID tripId) {
+        return this.repository.findByTripId(tripId).stream().map(activity -> new ActivitiesDataResponseDto(activity.getId(), activity.getTitle(), activity.getOccursAt())).toList();
     }
 }
