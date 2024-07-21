@@ -1,4 +1,4 @@
-package com.example.tripPlanner.controllers.dtos;
+package com.example.tripPlanner.controllers.dtos.errors;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
