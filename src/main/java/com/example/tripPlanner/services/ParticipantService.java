@@ -4,7 +4,7 @@ import com.example.tripPlanner.entities.ParticipantEntity;
 import com.example.tripPlanner.entities.TripEntity;
 import com.example.tripPlanner.controllers.dtos.responses.ParticipantCreateResponseDto;
 import com.example.tripPlanner.controllers.dtos.responses.ParticipantDataResponseDto;
-import com.example.tripPlanner.exceptions.TripNotFoundException;
+import com.example.tripPlanner.exceptions.RecordNotFoundException;
 import com.example.tripPlanner.repositories.ParticipantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,11 +40,11 @@ public class ParticipantService {
         Optional<ParticipantEntity> participant = this.repository.findById(id);
 
         if (participant.isEmpty()) {
-            throw new TripNotFoundException("O participante não foi encontrado.");
+            throw new RecordNotFoundException("O participante não foi encontrado.");
         }
 
         if (name == null) {
-            throw new TripNotFoundException("Nenhum nome foi informado.");
+            throw new RecordNotFoundException("Nenhum nome foi informado.");
         }
 
         ParticipantEntity rawParticipant = participant.get();
