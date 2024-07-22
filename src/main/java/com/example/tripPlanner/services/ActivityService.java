@@ -3,6 +3,7 @@ package com.example.tripPlanner.services;
 import com.example.tripPlanner.controllers.dtos.responses.ActivitiesDataResponseDto;
 import com.example.tripPlanner.controllers.dtos.responses.ActivityCreateResponseDto;
 import com.example.tripPlanner.controllers.dtos.requests.ActivityRecordDto;
+import com.example.tripPlanner.exceptions.RecordInvalidDateErrorException;
 import com.example.tripPlanner.repositories.ActivityRepository;
 import com.example.tripPlanner.entities.ActivityEntity;
 import com.example.tripPlanner.entities.TripEntity;
@@ -26,8 +27,8 @@ public class ActivityService {
         LocalDateTime endsAt = trip.getEndsAt();
         LocalDateTime startsAt = trip.getStartsAt();
 
-        if(occursAt.isBefore(startsAt) || occursAt.isAfter(endsAt)) {
-            return null;
+        if (occursAt.isBefore(startsAt) || occursAt.isAfter(endsAt)) {
+            throw new RecordInvalidDateErrorException("A data da atividade deve ser entre a data de início e a data de término da viagem.");
         }
 
         ActivityEntity newActivity = new ActivityEntity(payload.title(), payload.occurs_at(), trip);
