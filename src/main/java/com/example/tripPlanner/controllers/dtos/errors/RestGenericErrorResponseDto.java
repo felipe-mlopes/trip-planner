@@ -8,8 +8,9 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 @Getter
 @Setter
-public class RestErrorDto {
+public class RestGenericErrorResponseDto {
 
+    private int code;
     private HttpStatus status;
     private String message;
 }
