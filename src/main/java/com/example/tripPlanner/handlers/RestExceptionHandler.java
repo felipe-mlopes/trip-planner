@@ -1,31 +1,50 @@
 package com.example.tripPlanner.handlers;
 
-import com.example.tripPlanner.controllers.dtos.errors.RestErrorDto;
-import com.example.tripPlanner.exceptions.TripFullErrorException;
-import com.example.tripPlanner.exceptions.TripNotFoundException;
+import com.example.tripPlanner.controllers.dtos.errors.RestGenericErrorResponseDto;
+import com.example.tripPlanner.controllers.dtos.errors.RestValidationErrorResponseDto;
+import com.example.tripPlanner.exceptions.RecordInvalidDateErrorException;
+import com.example.tripPlanner.exceptions.RecordFullErrorException;
+import com.example.tripPlanner.exceptions.RecordNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@ControllerAdvice
-public class RestExceptionHandler extends ResponseEntityExceptionHandler {
+import java.util.List;
 
-    @ExceptionHandler(TripNotFoundException.class)
-    @ResponseBody
-    private ResponseEntity<RestErrorDto> notFoundHandler(TripNotFoundException exception) {
+@RestControllerAdvice
+public class RestExceptionHandler {
 
-        RestErrorDto threatResponse = new RestErrorDto(HttpStatus.NOT_FOUND, exception.getMessage());
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<RestValidationErrorResponseDto> argumentNotValidErrorHandler(MethodArgumentNotValidException exception) {
+
+        List<String> errorList = exception.getBindingResult().getFieldErrors().stream().map(
+                error -> error.getField() + ": " + error.getDefaultMessage()
+        ).toList();
+
+        RestValidationErrorResponseDto threatResponse = new RestValidationErrorResponseDto(HttpStatus.BAD_REQUEST.value() ,HttpStatus.BAD_REQUEST, errorList);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(threatResponse);
+    }
+
+    @ExceptionHandler(RecordNotFoundException.class)
+    private ResponseEntity<RestGenericErrorResponseDto> notFoundErrorHandler(RecordNotFoundException exception) {
+
+        RestGenericErrorResponseDto threatResponse = new RestGenericErrorResponseDto(HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND, exception.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(threatResponse);
     }
 
-    @ExceptionHandler(TripFullErrorException.class)
-    @ResponseBody
-    private ResponseEntity<RestErrorDto> fullErrorHandler(TripFullErrorException exception) {
+    @ExceptionHandler(RecordFullErrorException.class)
+    private ResponseEntity<RestGenericErrorResponseDto> genericErrorHandler(RecordFullErrorException exception) {
 
-        RestErrorDto threatResponse = new RestErrorDto(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+        RestGenericErrorResponseDto threatResponse = new RestGenericErrorResponseDto(HttpStatus.INTERNAL_SERVER_ERROR.value(), HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(threatResponse);
+    }
+
+    @ExceptionHandler(RecordInvalidDateErrorException.class)
+    private  ResponseEntity<RestGenericErrorResponseDto> invalidDateErrorHandler(RecordInvalidDateErrorException exception) {
+
+        RestGenericErrorResponseDto threatResponse = new RestGenericErrorResponseDto((HttpStatus.BAD_REQUEST.value()), HttpStatus.BAD_REQUEST, exception.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(threatResponse);
     }
 }
