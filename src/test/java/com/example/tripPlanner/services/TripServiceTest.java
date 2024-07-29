@@ -32,7 +32,6 @@ class TripServiceTest {
     @Mock
     private TripRepository tripRepository;
 
-    @Autowired
     @InjectMocks
     private TripService tripService;
 
@@ -51,8 +50,8 @@ class TripServiceTest {
     class createTrip {
 
         @Test
-        @DisplayName("Should create a trip with success")
-        void shouldCreateATripWithSuccess() {
+        @DisplayName("Should be able to create new trip with success")
+        void shouldBeAbleToCreateNewTripWithSuccess() {
 
             var trip = new TripEntity();
             trip.setId(id);
@@ -86,8 +85,8 @@ class TripServiceTest {
         }
 
         @Test
-        @DisplayName("Should throw exception when startsAt is less than currentAt")
-        void shouldThrowExceptionWhenStartsAtIsLessThanCurrentAt() {
+        @DisplayName("Should not be able to create new trip when start date is before or equal to now")
+        void shouldNotBeAbleToCreateNewTripWhenStartDateIsBeforeOrEqualToNow() {
 
             var input = new TripRecordDto(
                     destination,
@@ -107,8 +106,8 @@ class TripServiceTest {
         }
 
         @Test
-        @DisplayName("Should throw exception when endsAt is greater than startsAt")
-        void shouldThrowExceptionWhenEndsAtIsGreaterThanStartsAt() {
+        @DisplayName("Should not be able to create new trip when end date is before or equal to start date")
+        void shouldNotBeAbleToCreateNewTripWhenEndDateIsBeforeOrEqualToStartDate() {
 
             var input = new TripRecordDto(
                     destination,
@@ -167,8 +166,8 @@ class TripServiceTest {
     class getTripSpecific {
 
         @Test
-        @DisplayName("Should get trip specific with success")
-        void shouldGetTripSpecificWithSuccess() {
+        @DisplayName("Should be able to get a trip specific with success")
+        void shouldBeAbleToGetATripSpecificWithSuccess() {
 
             var trip = new TripEntity();
             trip.setId(id);
@@ -187,8 +186,8 @@ class TripServiceTest {
         }
 
         @Test
-        @DisplayName("Should throw exception when tripId not exists")
-        void shouldThrowExceptionWhenTripIdNotExists() {
+        @DisplayName("Should not be able to get a trip specific if it is not found")
+        void shouldNotBeAbleToGetATripSpecificIfItIsNotFound() {
 
             RecordNotFoundException exception = assertThrows(
                     RecordNotFoundException.class,
@@ -203,8 +202,8 @@ class TripServiceTest {
     class getTripDetails {
 
         @Test
-        @DisplayName("Should get trip details with success")
-        void shouldGetTripDetailsWithSuccess() {
+        @DisplayName("Should be able to get a trip details with success")
+        void shouldBeAbleToGetATripDetailsWithSuccess() {
 
             var trip = new TripEntity();
             trip.setId(id);
@@ -223,8 +222,8 @@ class TripServiceTest {
         }
 
         @Test
-        @DisplayName("Should throw exception when tripId not exists in trip details")
-        void shouldThrowExceptionWhenTripIdNotExistsInTripDetails() {
+        @DisplayName("Should not be able to get a trip details if it is not found")
+        void shouldNotBeAbleToGetATripDetailsIfItIsNotFound() {
 
             RecordNotFoundException exception = assertThrows(
                     RecordNotFoundException.class,
@@ -236,11 +235,122 @@ class TripServiceTest {
     }
 
     @Nested
+    class updateTrip {
+
+        @Test
+        @DisplayName("Should be able to update a trip with success")
+        void shouldBeAbleToUpdateATripWithSuccess() {
+
+            var trip = new TripEntity();
+            trip.setId(id);
+            trip.setDestination(destination);
+            trip.setStartsAt(startsAt);
+            trip.setEndsAt(endsAt);
+            trip.setOwnerName(ownerName);
+            trip.setOwnerEmail(ownerEmail);
+
+            doReturn(Optional.of(trip)).when(tripRepository).findById(id);
+
+            var input = new TripRecordDto(
+                    destination,
+                    LocalDateTime.now().plusDays(1).format(DateTimeFormatter.ISO_DATE_TIME),
+                    LocalDateTime.now().plusDays(8).format(DateTimeFormatter.ISO_DATE_TIME),
+                    emailsToInvite,
+                    "Mary Jane",
+                    "mary-jane@example.com"
+            );
+
+            trip.setStartsAt(LocalDateTime.parse(input.starts_at()));
+            trip.setEndsAt(LocalDateTime.parse(input.ends_at()));
+            trip.setOwnerName(input.owner_name());
+            trip.setOwnerEmail(input.owner_email());
+
+            tripService.updateTrip(trip.getId(), input);
+
+            verify(tripRepository).save(tripArgumentCaptor.capture());
+
+            var tripCaptured = tripArgumentCaptor.getValue();
+
+            assertEquals(LocalDateTime.parse(input.starts_at()), tripCaptured.getStartsAt());
+            assertEquals(LocalDateTime.parse(input.ends_at()), tripCaptured.getEndsAt());
+            assertEquals(input.owner_name(), tripCaptured.getOwnerName());
+            assertEquals(input.owner_email(), tripCaptured.getOwnerEmail());
+        }
+
+        @Test
+        @DisplayName("Should not be able to update a trip if it is not found")
+        void shouldNotBeAbleToUpdateATripIfItIsNotFound() {
+
+            var trip = new TripRecordDto(
+                    destination,
+                    LocalDateTime.now().plusDays(1).format(DateTimeFormatter.ISO_DATE_TIME),
+                    LocalDateTime.now().plusDays(8).format(DateTimeFormatter.ISO_DATE_TIME),
+                    emailsToInvite,
+                    ownerName,
+                    ownerEmail
+            );
+
+            RecordNotFoundException exception = assertThrows(
+                    RecordNotFoundException.class,
+                    () -> tripService.updateTrip(UUID.randomUUID(), trip)
+            );
+
+            assertThat(exception.getMessage()).isEqualTo("A viagem não foi encontrada.");
+        }
+
+        @Test
+        @DisplayName("Should not be able to update a trip when start date is before or equal to now")
+        void shouldNotBeAbleToUpdateATripWhenStartDateIsBeforeOrEqualToNow() {
+
+            var trip = new TripRecordDto(
+                    destination,
+                    LocalDateTime.now().minusDays(1).format(DateTimeFormatter.ISO_DATE_TIME),
+                    LocalDateTime.now().plusDays(8).format(DateTimeFormatter.ISO_DATE_TIME),
+                    emailsToInvite,
+                    ownerName,
+                    ownerEmail
+            );
+
+            doReturn(Optional.of(trip)).when(tripRepository).findById(id);
+
+            RecordInvalidDateErrorException exception = assertThrows(
+                    RecordInvalidDateErrorException.class,
+                    () -> tripService.updateTrip(id, trip)
+            );
+
+            assertThat(exception.getMessage()).isEqualTo("A data de início deve ser maior que a data de hoje.");
+        }
+
+        @Test
+        @DisplayName("Should not be able to update a trip when end date is before or equal to start date")
+        void shouldNotBeAbleToUpdateATripWhenEndDateIsBeforeOrEqualToStartDate() {
+
+            var trip = new TripRecordDto(
+                    destination,
+                    LocalDateTime.now().plusDays(7).format(DateTimeFormatter.ISO_DATE_TIME),
+                    LocalDateTime.now().plusDays(1).format(DateTimeFormatter.ISO_DATE_TIME),
+                    emailsToInvite,
+                    ownerName,
+                    ownerEmail
+            );
+
+            doReturn(Optional.of(trip)).when(tripRepository).findById(id);
+
+            RecordInvalidDateErrorException exception = assertThrows(
+                    RecordInvalidDateErrorException.class,
+                    () -> tripService.updateTrip(id, trip)
+            );
+
+            assertThat(exception.getMessage()).isEqualTo("A data de término deve ser maior que a data de início.");
+        }
+    }
+
+    @Nested
     class deleteTrip {
 
         @Test
-        @DisplayName("Should delete trip with success when trip exists")
-        void shouldDeleteTripWithSuccessWhenTripExists() {
+        @DisplayName("Should be able to delete a trip with success")
+        void shouldBeAbleToDeleteATripWithSuccess() {
 
             var trip = new TripEntity();
             trip.setId(id);
@@ -258,8 +368,8 @@ class TripServiceTest {
         }
 
         @Test
-        @DisplayName("Should throw exception when trip not found")
-        void shouldThrowExceptionWhenTripNotFound() {
+        @DisplayName("Should not be able to delete a trip if it is not found")
+        void shouldNotBeAbleToDeleteATripIfItIsNotFound() {
 
             RecordNotFoundException exception = assertThrows(
                     RecordNotFoundException.class,
