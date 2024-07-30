@@ -12,8 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -252,18 +250,13 @@ class TripServiceTest {
             doReturn(Optional.of(trip)).when(tripRepository).findById(id);
 
             var input = new TripRecordDto(
-                    destination,
+                    "City A",
                     LocalDateTime.now().plusDays(1).format(DateTimeFormatter.ISO_DATE_TIME),
                     LocalDateTime.now().plusDays(8).format(DateTimeFormatter.ISO_DATE_TIME),
                     emailsToInvite,
-                    "Mary Jane",
-                    "mary-jane@example.com"
+                    ownerName,
+                    ownerEmail
             );
-
-            trip.setStartsAt(LocalDateTime.parse(input.starts_at()));
-            trip.setEndsAt(LocalDateTime.parse(input.ends_at()));
-            trip.setOwnerName(input.owner_name());
-            trip.setOwnerEmail(input.owner_email());
 
             tripService.updateTrip(trip.getId(), input);
 
@@ -271,10 +264,9 @@ class TripServiceTest {
 
             var tripCaptured = tripArgumentCaptor.getValue();
 
+            assertEquals(input.destination(), tripCaptured.getDestination());
             assertEquals(LocalDateTime.parse(input.starts_at()), tripCaptured.getStartsAt());
             assertEquals(LocalDateTime.parse(input.ends_at()), tripCaptured.getEndsAt());
-            assertEquals(input.owner_name(), tripCaptured.getOwnerName());
-            assertEquals(input.owner_email(), tripCaptured.getOwnerEmail());
         }
 
         @Test
@@ -342,6 +334,45 @@ class TripServiceTest {
             );
 
             assertThat(exception.getMessage()).isEqualTo("A data de término deve ser maior que a data de início.");
+        }
+    }
+
+    @Nested
+    class confirmTrip {
+
+        @Test
+        @DisplayName("Should be able to confirm a trip with success")
+        void shouldBeAbleToConfirmATripWithSuccess() {
+
+            var trip = new TripEntity();
+            trip.setId(id);
+            trip.setDestination(destination);
+            trip.setStartsAt(startsAt);
+            trip.setEndsAt(endsAt);
+            trip.setOwnerName(ownerName);
+            trip.setOwnerEmail(ownerEmail);
+
+            doReturn(Optional.of(trip)).when(tripRepository).findById(id);
+
+            tripService.confirmTrip(trip.getId());
+
+            verify(tripRepository).save(tripArgumentCaptor.capture());
+
+            var tripCaptured = tripArgumentCaptor.getValue();
+
+            assertEquals(true, tripCaptured.getIsConfirmed());
+        }
+
+        @Test
+        @DisplayName("Should not be able to confirm a trip if it is not found")
+        void shouldNotBeAbleToConfirmATripIFItIsNotFound() {
+
+            RecordNotFoundException exception = assertThrows(
+                    RecordNotFoundException.class,
+                    () -> tripService.confirmTrip(UUID.randomUUID())
+            );
+
+            assertThat(exception.getMessage()).isEqualTo("A viagem não foi encontrada.");
         }
     }
 
