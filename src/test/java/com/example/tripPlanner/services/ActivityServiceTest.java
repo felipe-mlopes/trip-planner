@@ -1,6 +1,7 @@
 package com.example.tripPlanner.services;
 
 import com.example.tripPlanner.controllers.dtos.requests.ActivityRecordDto;
+import com.example.tripPlanner.controllers.dtos.responses.ActivitiesDataResponseDto;
 import com.example.tripPlanner.entities.ActivityEntity;
 import com.example.tripPlanner.entities.TripEntity;
 import com.example.tripPlanner.exceptions.RecordInvalidDateErrorException;
@@ -17,11 +18,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ActivityServiceTest {
@@ -125,5 +129,41 @@ class ActivityServiceTest {
     }
 
     @Nested
-    class getAllActivitiesFromId {}
+    class getAllActivitiesFromId {
+
+        @Test
+        @DisplayName("Should be able to get all activities from tripId with success")
+        void shouldBeAbleToGetAllActivitiesFromTripIdWithSuccess() {
+
+            var trip = new TripEntity();
+            trip.setId(UUID.randomUUID());
+            trip.setDestination("Somewhere City");
+            trip.setStartsAt(LocalDateTime.now().plusDays(1));
+            trip.setEndsAt(LocalDateTime.now().plusDays(8));
+            trip.setOwnerName("John Doe");
+            trip.setOwnerEmail("john-doe@example.com");
+
+            var activity01 = new ActivityEntity();
+            activity01.setId(UUID.randomUUID());
+            activity01.setTitle("City tour");
+            activity01.setOccursAt(LocalDateTime.parse(LocalDateTime.now().plusDays(2).format(DateTimeFormatter.ISO_DATE_TIME)));
+            activity01.setTrip(trip);
+
+            var activity02 = new ActivityEntity();
+            activity02.setId(UUID.randomUUID());
+            activity02.setTitle("Visit to museums");
+            activity02.setOccursAt(LocalDateTime.parse(LocalDateTime.now().plusDays(3).format(DateTimeFormatter.ISO_DATE_TIME)));
+            activity02.setTrip(trip);
+
+            var activities = Arrays.asList(activity01, activity02);
+
+            when(activityRepository.findByTripId(trip.getId())).thenReturn(activities);
+
+            List<ActivitiesDataResponseDto> result = activityService.getAllActivitiesFromId(trip.getId());
+
+            assertEquals(2, result.size());
+            assertEquals("City tour", result.get(0).title());
+            assertEquals("Visit to museums", result.get(1).title());
+        }
+    }
 }
