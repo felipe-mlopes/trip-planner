@@ -36,13 +36,13 @@ class TripServiceTest {
     @Captor
     private ArgumentCaptor<TripEntity> tripArgumentCaptor;
 
-    UUID id = UUID.randomUUID();
-    String destination = "Somewhere City";
-    LocalDateTime startsAt = LocalDateTime.now().plusDays(1);
-    LocalDateTime endsAt = LocalDateTime.now().plusDays(8);
-    List<String> emailsToInvite = Arrays.asList("test1@example.com", "test2@example.com");
-    String ownerName = "John Doe";
-    String ownerEmail = "john-doe@example.com";
+    private final UUID id = UUID.randomUUID();
+    private final String destination = "Somewhere City";
+    private final LocalDateTime startsAt = LocalDateTime.now().plusDays(1);
+    private final LocalDateTime endsAt = LocalDateTime.now().plusDays(8);
+    private final List<String> emailsToInvite = Arrays.asList("test1@example.com", "test2@example.com");
+    private final String ownerName = "John Doe";
+    private final String ownerEmail = "john-doe@example.com";
 
     @Nested
     class createTrip {
@@ -83,8 +83,8 @@ class TripServiceTest {
         }
 
         @Test
-        @DisplayName("Should not be able to create new trip when start date is before or equal to now")
-        void shouldNotBeAbleToCreateNewTripWhenStartDateIsBeforeOrEqualToNow() {
+        @DisplayName("Should not be able to create new trip when start date is before to now")
+        void shouldNotBeAbleToCreateNewTripWhenStartDateIsBeforeToNow() {
 
             var input = new TripRecordDto(
                     destination,
@@ -104,13 +104,60 @@ class TripServiceTest {
         }
 
         @Test
-        @DisplayName("Should not be able to create new trip when end date is before or equal to start date")
-        void shouldNotBeAbleToCreateNewTripWhenEndDateIsBeforeOrEqualToStartDate() {
+        @DisplayName("Should not be able to create new trip when start date is equal to now")
+        void shouldNotBeAbleToCreateNewTripWhenStartDateIsEqualToNow() {
+
+            LocalDateTime now = LocalDateTime.now();
+            String startAt = now.format(DateTimeFormatter.ISO_DATE_TIME);
 
             var input = new TripRecordDto(
                     destination,
-                    LocalDateTime.now().plusDays(5).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+                    startAt,
+                    LocalDateTime.now().plusDays(7).format(DateTimeFormatter.ISO_DATE_TIME),
+                    emailsToInvite,
+                    ownerName,
+                    ownerEmail
+            );
+
+            RecordInvalidDateErrorException exception = assertThrows(
+                    RecordInvalidDateErrorException.class,
+                    () -> tripService.createTrip(input)
+            );
+
+            assertThat(exception.getMessage()).isEqualTo("A data de início deve ser maior que a data de hoje.");
+        }
+
+        @Test
+        @DisplayName("Should not be able to create new trip when end date is before to start date")
+        void shouldNotBeAbleToCreateNewTripWhenEndDateIsBeforeToStartDate() {
+
+            var input = new TripRecordDto(
+                    destination,
+                    LocalDateTime.now().plusDays(5).format(DateTimeFormatter.ISO_DATE_TIME),
                     LocalDateTime.now().plusDays(4).format(DateTimeFormatter.ISO_DATE_TIME),
+                    emailsToInvite,
+                    ownerName,
+                    ownerEmail
+            );
+
+            RecordInvalidDateErrorException exception = assertThrows(
+                    RecordInvalidDateErrorException.class,
+                    () -> tripService.createTrip(input)
+            );
+
+            assertThat(exception.getMessage()).isEqualTo("A data de término deve ser maior que a data de início.");
+        }
+
+        @Test
+        @DisplayName("Should not be able to create new trip when end date is equal to start date")
+        void shouldNotBeAbleToCreateNewTripWhenEndDateIsEqualToStartDate() {
+
+            var date = LocalDateTime.now().plusDays(1).format(DateTimeFormatter.ISO_DATE_TIME);
+
+            var input = new TripRecordDto(
+                    destination,
+                    date,
+                    date,
                     emailsToInvite,
                     ownerName,
                     ownerEmail
@@ -291,8 +338,8 @@ class TripServiceTest {
         }
 
         @Test
-        @DisplayName("Should not be able to update a trip when start date is before or equal to now")
-        void shouldNotBeAbleToUpdateATripWhenStartDateIsBeforeOrEqualToNow() {
+        @DisplayName("Should not be able to update a trip when start date is before to now")
+        void shouldNotBeAbleToUpdateATripWhenStartDateIsBeforeToNow() {
 
             var trip = new TripRecordDto(
                     destination,
@@ -314,13 +361,64 @@ class TripServiceTest {
         }
 
         @Test
-        @DisplayName("Should not be able to update a trip when end date is before or equal to start date")
-        void shouldNotBeAbleToUpdateATripWhenEndDateIsBeforeOrEqualToStartDate() {
+        @DisplayName("Should not be able to update a trip when start date is equal to now")
+        void shouldNotBeAbleToUpdateATripWhenStartDateIsEqualToNow() {
+
+            LocalDateTime now = LocalDateTime.now();
+            String startAt = now.format(DateTimeFormatter.ISO_DATE_TIME);
+
+            var trip = new TripRecordDto(
+                    destination,
+                    startAt,
+                    LocalDateTime.now().plusDays(8).format(DateTimeFormatter.ISO_DATE_TIME),
+                    emailsToInvite,
+                    ownerName,
+                    ownerEmail
+            );
+
+            doReturn(Optional.of(trip)).when(tripRepository).findById(id);
+
+            RecordInvalidDateErrorException exception = assertThrows(
+                    RecordInvalidDateErrorException.class,
+                    () -> tripService.updateTrip(id, trip)
+            );
+
+            assertThat(exception.getMessage()).isEqualTo("A data de início deve ser maior que a data de hoje.");
+        }
+
+        @Test
+        @DisplayName("Should not be able to update a trip when end date is before to start date")
+        void shouldNotBeAbleToUpdateATripWhenEndDateIsBeforeToStartDate() {
 
             var trip = new TripRecordDto(
                     destination,
                     LocalDateTime.now().plusDays(7).format(DateTimeFormatter.ISO_DATE_TIME),
                     LocalDateTime.now().plusDays(1).format(DateTimeFormatter.ISO_DATE_TIME),
+                    emailsToInvite,
+                    ownerName,
+                    ownerEmail
+            );
+
+            doReturn(Optional.of(trip)).when(tripRepository).findById(id);
+
+            RecordInvalidDateErrorException exception = assertThrows(
+                    RecordInvalidDateErrorException.class,
+                    () -> tripService.updateTrip(id, trip)
+            );
+
+            assertThat(exception.getMessage()).isEqualTo("A data de término deve ser maior que a data de início.");
+        }
+
+        @Test
+        @DisplayName("Should not be able to update a trip when end date is equal to start date")
+        void shouldNotBeAbleToUpdateATripWhenEndDateIsEqualToStartDate() {
+
+            var date = LocalDateTime.now().plusDays(1).format(DateTimeFormatter.ISO_DATE_TIME);
+
+            var trip = new TripRecordDto(
+                    destination,
+                    date,
+                    date,
                     emailsToInvite,
                     ownerName,
                     ownerEmail
@@ -365,7 +463,7 @@ class TripServiceTest {
 
         @Test
         @DisplayName("Should not be able to confirm a trip if it is not found")
-        void shouldNotBeAbleToConfirmATripIFItIsNotFound() {
+        void shouldNotBeAbleToConfirmATripIfItIsNotFound() {
 
             RecordNotFoundException exception = assertThrows(
                     RecordNotFoundException.class,
