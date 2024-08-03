@@ -43,7 +43,7 @@ public class ParticipantService {
             throw new RecordNotFoundException("O participante não foi encontrado.");
         }
 
-        if (name == null) {
+        if (name == null || name.trim().isEmpty()) {
             throw new RecordNotFoundException("Nenhum nome foi informado.");
         }
 
